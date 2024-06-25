@@ -1,4 +1,0 @@
-This is a new file created from gitBash using vim
-Added Second line 
-just to check
-Addede anothere lune
