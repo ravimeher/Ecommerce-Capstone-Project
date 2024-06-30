@@ -2,6 +2,7 @@ package org.example.productcatalogservice.controller;
 
 import org.example.productcatalogservice.dto.CategoryDto;
 import org.example.productcatalogservice.dto.ProductDto;
+import org.example.productcatalogservice.model.Category;
 import org.example.productcatalogservice.model.Product;
 import org.example.productcatalogservice.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +50,38 @@ public class ProductController {
             ProductDto productDto = from(product);
             return new ResponseEntity<ProductDto>(productDto,headers,HttpStatus.OK);
         }catch (IllegalArgumentException exception){
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            //return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            throw exception;
         }
 
     }
 
+    @PostMapping
+    public ProductDto createProduct(@RequestBody ProductDto product) {
+        return product;
+    }
+
+    @PutMapping("{id}")
+    public ProductDto  replaceProduct(@PathVariable int id,@RequestBody ProductDto productDto) {
+        Product product = from(productDto);
+        Product result = productService.replaceProduct(id,product);
+        return from(result);
+    }
+
+    private Product from(ProductDto productDto){
+        Product product = new Product();
+        product.setId(productDto.getId());
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setDescription(productDto.getDescription());
+        product.setImageUrl(productDto.getImageUrl());
+        Category category = new Category();
+        category.setId(productDto.getCategory().getId());
+        category.setName(productDto.getCategory().getName());
+        category.setDescription(productDto.getCategory().getDescription());
+        product.setCategory(category);
+        return product;
+    }
     private ProductDto from(Product product){
         ProductDto productDto = new ProductDto();
         productDto.setId(product.getId());
@@ -68,12 +96,5 @@ public class ProductController {
         productDto.setCategory(categoryDto);
         return productDto;
     }
-    @PostMapping
-    public ProductDto createProduct(@RequestBody ProductDto product) {
-         return product;
-    }
-    @PutMapping("{id}")
-    public ProductDto  replaceProduct(@PathVariable int id,@RequestBody ProductDto product) {
-        return product;
-    }
+
 }
