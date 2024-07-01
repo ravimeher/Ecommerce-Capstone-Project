@@ -58,7 +58,9 @@ public class ProductController {
 
     @PostMapping
     public ProductDto createProduct(@RequestBody ProductDto product) {
-        return product;
+        Product product1 = from(product);
+        Product response = productService.createProduct(product1);
+        return from(response);
     }
 
     @PutMapping("{id}")
