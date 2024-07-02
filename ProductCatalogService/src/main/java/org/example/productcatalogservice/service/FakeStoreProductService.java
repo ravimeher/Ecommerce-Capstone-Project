@@ -12,6 +12,11 @@ import java.util.List;
 
 @Service
 public class FakeStoreProductService implements IProductService {
+    @Override
+    public Product deleteProduct(int id) {
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreAPIClient.deleteProduct(id);
+        return from(fakeStoreProductDto);
+    }
 
     @Autowired
     private FakeStoreAPIClient fakeStoreAPIClient;

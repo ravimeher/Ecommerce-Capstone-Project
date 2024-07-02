@@ -70,6 +70,12 @@ public class ProductController {
         return from(result);
     }
 
+    @DeleteMapping("{id}")
+    public ProductDto deleteProduct(@PathVariable int id) {
+        Product product = productService.deleteProduct(id);
+        return from(product);
+    }
+
     private Product from(ProductDto productDto){
         Product product = new Product();
         product.setId(productDto.getId());
@@ -77,11 +83,15 @@ public class ProductController {
         product.setPrice(productDto.getPrice());
         product.setDescription(productDto.getDescription());
         product.setImageUrl(productDto.getImageUrl());
-        Category category = new Category();
-        category.setId(productDto.getCategory().getId());
-        category.setName(productDto.getCategory().getName());
-        category.setDescription(productDto.getCategory().getDescription());
-        product.setCategory(category);
+        if(productDto.getCategory() != null){
+            Category category = new Category();
+            category.setId(productDto.getCategory().getId());
+            category.setName(productDto.getCategory().getName());
+            category.setDescription(productDto.getCategory().getDescription());
+            product.setCategory(category);
+        }
+        else
+            product.setCategory(null);
         return product;
     }
     private ProductDto from(Product product){
@@ -91,11 +101,16 @@ public class ProductController {
         productDto.setDescription(product.getDescription());
         productDto.setImageUrl(product.getImageUrl());
         productDto.setPrice(product.getPrice());
+        if(product.getCategory() != null)
+        {
+            CategoryDto categoryDto = new CategoryDto();
+            categoryDto.setId(product.getCategory().getId());
+            categoryDto.setName(product.getCategory().getName());
+            productDto.setCategory(categoryDto);
+        }
+        else
+            productDto.setCategory(null);
 
-        CategoryDto categoryDto = new CategoryDto();
-        categoryDto.setId(product.getCategory().getId());
-        categoryDto.setName(product.getCategory().getName());
-        productDto.setCategory(categoryDto);
         return productDto;
     }
 
