@@ -8,4 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepo extends JpaRepository<Product,Integer> {
+    Optional<Product> findById(Long id);
 }
