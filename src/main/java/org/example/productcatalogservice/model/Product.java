@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Entity
 public class Product extends BaseModel{
     private String name;
+    private String imageUrl;
     private String description;
     private Double price;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Category category;
-    private String imageUrl;
+    private Boolean isPrimeSpecific;
 
 }
