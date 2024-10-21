@@ -1,6 +1,9 @@
 package org.example.productcatalogservice.repository;
 
 import org.example.productcatalogservice.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepo extends JpaRepository<Product,Integer> {
+    Page<Product> findProductsByName(String query, Pageable pageable);
     Optional<Product> findById(Long id);
     List<Product> findProductsByPriceBetween(Double low,Double high);
     List<Product> findAllByIsPrimeSpecific(boolean prime);
@@ -22,4 +26,5 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
 
     @Query("select c.name from Product p join Category c on c.id = p.category.id where p.id=:productid")
     String findCategoryNameFromProductId(int productid);
+
 }
