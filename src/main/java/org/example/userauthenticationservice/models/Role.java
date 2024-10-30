@@ -10,6 +10,6 @@ import lombok.Setter;
 public class Role extends BaseModel {
     private String value;
 
-//    @ManyToMany(mappedBy = "roles")
+//    @ManyToMany(mappedBy = "roleSet")
 //    private Set<User> user;
 }
