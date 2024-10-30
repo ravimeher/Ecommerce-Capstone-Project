@@ -1,5 +1,6 @@
 package org.example.userauthenticationservice.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.antlr.v4.runtime.misc.Pair;
 import org.example.userauthenticationservice.dtos.*;
 import org.example.userauthenticationservice.exceptions.InvalidTokenException;
@@ -36,7 +37,7 @@ public class AuthController {
 
             return new ResponseEntity<>(from(user),HttpStatus.CREATED);
         }
-        catch (UserAlreadyExistsException ex){
+        catch (UserAlreadyExistsException | JsonProcessingException ex){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }

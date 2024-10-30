@@ -1,10 +1,14 @@
 package org.example.userauthenticationservice.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.antlr.v4.runtime.misc.Pair;
+import org.example.userauthenticationservice.client.KafkaProducerClient;
+import org.example.userauthenticationservice.dtos.SendEmailDto;
 import org.example.userauthenticationservice.models.Session;
 import org.example.userauthenticationservice.models.SessionState;
 import org.example.userauthenticationservice.models.User;
@@ -33,8 +37,12 @@ public class AuthService implements IAuthService{
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private SecretKey secretKey;
+    @Autowired
+    private KafkaProducerClient kafkaProducerClient;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    public User signUp(String email,String password){
+    public User signUp(String email,String password) throws JsonProcessingException {
         Optional<User> user = userRepo.findByEmail(email);
         if(user.isPresent()){
             return null;
@@ -43,6 +51,13 @@ public class AuthService implements IAuthService{
         newUser.setEmail(email);
         newUser.setPassword(bCryptPasswordEncoder.encode(password));
         userRepo.save(newUser);
+        //send email to user
+        SendEmailDto sendEmailDto=new SendEmailDto();
+        sendEmailDto.setTo(newUser.getEmail());
+        sendEmailDto.setFrom("anuragbatch@gmail.com");
+        sendEmailDto.setSubject("User Registration");
+        sendEmailDto.setBody("Congratulations on Signing up");
+        kafkaProducerClient.SendMessage("signup",objectMapper.writeValueAsString(sendEmailDto));
         return newUser;
     }
 
@@ -130,5 +145,18 @@ public class AuthService implements IAuthService{
         return true;
     }
 
-
+//    public String generateRefreshToken(String token) {
+//        Session session = sessionRepo.findByToken(token).get();
+//        User user = session.getUser();
+//
+//        Map<String,Object> claims = new HashMap<>();
+//        claims.put("user_id__",user.getId());
+//        claims.put("roles",user.getRoles());
+//        claims.put("email",user.getEmail());
+//        long nowInMillis = System.currentTimeMillis();
+//        claims.put("iat",nowInMillis);
+//        claims.put("exp",nowInMillis+1000000);
+//
+//
+//    }
 }
