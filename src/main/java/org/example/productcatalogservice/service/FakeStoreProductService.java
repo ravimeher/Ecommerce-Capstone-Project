@@ -1,29 +1,50 @@
 package org.example.productcatalogservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.productcatalogservice.client.FakeStoreAPIClient;
 import org.example.productcatalogservice.dto.FakeStoreProductDto;
 import org.example.productcatalogservice.model.Category;
 import org.example.productcatalogservice.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Primary
 public class FakeStoreProductService implements IProductService {
-    @Override
-    public Product deleteProduct(int id) {
-        FakeStoreProductDto fakeStoreProductDto = fakeStoreAPIClient.deleteProduct(id);
-        return from(fakeStoreProductDto);
-    }
+
+    private RestTemplateBuilder restTemplateBuilder;
+
+    private FakeStoreAPIClient fakeStoreAPIClient;
+
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Autowired
-    private FakeStoreAPIClient fakeStoreAPIClient;
+    private ObjectMapper objectMapper;
+
+    public FakeStoreProductService(RestTemplateBuilder restTemplateBuilder,FakeStoreAPIClient fakeStoreAPIClient,RedisTemplate<String,Object> redisTemplate) {
+        this.restTemplateBuilder = restTemplateBuilder;
+        this.fakeStoreAPIClient = fakeStoreAPIClient;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public Product getProductById(int id) {
-        FakeStoreProductDto fakeStoreProductDto = fakeStoreAPIClient.getProductById(id);
+        FakeStoreProductDto fakeStoreProductDto = null;
+        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash()
+                .get("_PRODUCTS",id);
+        if(fakeStoreProductDto != null) {
+            System.out.println("Found in Cache");
+            return  from(fakeStoreProductDto);
+        }
+        fakeStoreProductDto = fakeStoreAPIClient.getProductById(id);
+        System.out.println("Found by calling fakestore");
+        redisTemplate.opsForHash().put("_PRODUCTS",id,fakeStoreProductDto);
         return from(fakeStoreProductDto);
     }
 
@@ -38,6 +59,11 @@ public class FakeStoreProductService implements IProductService {
         return products;
     }
 
+    @Override
+    public Product deleteProduct(int id) {
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreAPIClient.deleteProduct(id);
+        return from(fakeStoreProductDto);
+    }
     @Override
     public Product createProduct(Product product) {
         return null;

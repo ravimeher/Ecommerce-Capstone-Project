@@ -29,7 +29,7 @@ public class FakeStoreAPIClient {
     }
 
     public FakeStoreProductDto getProductById(int id){
-        ResponseEntity<FakeStoreProductDto> fakeStoreProductDtoResponseEntity = requestForEntity(HttpMethod.GET,"http://fakestoreapi.com/products/{productId}",null,FakeStoreProductDto.class,id);
+        ResponseEntity<FakeStoreProductDto> fakeStoreProductDtoResponseEntity = requestForEntity(HttpMethod.GET,"https://fakestoreapi.com/products/{productId}",null,FakeStoreProductDto.class,id);
         if(fakeStoreProductDtoResponseEntity.getBody() != null &&
                 fakeStoreProductDtoResponseEntity.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
             return fakeStoreProductDtoResponseEntity.getBody();
@@ -38,12 +38,12 @@ public class FakeStoreAPIClient {
     }
 
     public FakeStoreProductDto replaceProduct(int id, FakeStoreProductDto fakeStoreProductDtoReq){
-        FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.PUT,"http://fakestoreapi.com/products/{id}",fakeStoreProductDtoReq,FakeStoreProductDto.class,id).getBody();
+        FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.PUT,"https://fakestoreapi.com/products/{id}",fakeStoreProductDtoReq,FakeStoreProductDto.class,id).getBody();
         return fakeStoreProductDto;
     }
 
     public FakeStoreProductDto deleteProduct(int id){
-        FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.DELETE,"http://fakestoreapi.com/products/{id}",null,FakeStoreProductDto.class,id).getBody();
+        FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.DELETE,"https://fakestoreapi.com/products/{id}",null,FakeStoreProductDto.class,id).getBody();
         return fakeStoreProductDto;
     }
 
