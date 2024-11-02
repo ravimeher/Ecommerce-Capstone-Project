@@ -24,6 +24,12 @@ public class ProductController {
     @Autowired
     private IProductService productService;
 
+    @GetMapping("/{pid}/{uid}")
+    public ProductDto getProductBasedOnUserScope(@PathVariable Long pid,@PathVariable Long uid){
+        Product product = productService.getProductBasedOnUserScope(pid,uid);
+        return from(product);
+    }
+
     @GetMapping
     public List<ProductDto> getProducts() {
         List<Product> products = productService.getAllProducts();
@@ -110,7 +116,7 @@ public class ProductController {
         }
         else
             productDto.setCategory(null);
-
+        productDto.setIsPrivate(product.getIsPrivate());
         return productDto;
     }
 

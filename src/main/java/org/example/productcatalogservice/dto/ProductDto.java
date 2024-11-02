@@ -15,4 +15,5 @@ public class ProductDto {
     private Double price;
     private CategoryDto category;
     private String imageUrl;
+    private Boolean isPrivate;
 }

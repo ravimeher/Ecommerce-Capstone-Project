@@ -23,5 +23,6 @@ public class Product extends BaseModel{
     @JsonManagedReference
     private Category category;
     private Boolean isPrimeSpecific;
+    private Boolean isPrivate;
 
 }

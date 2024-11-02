@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Primary
+//@Primary
 public class FakeStoreProductService implements IProductService {
 
     private RestTemplateBuilder restTemplateBuilder;
@@ -64,6 +64,12 @@ public class FakeStoreProductService implements IProductService {
         FakeStoreProductDto fakeStoreProductDto = fakeStoreAPIClient.deleteProduct(id);
         return from(fakeStoreProductDto);
     }
+
+    @Override
+    public Product getProductBasedOnUserScope(Long pid, Long uid) {
+        return null;
+    }
+
     @Override
     public Product createProduct(Product product) {
         return null;
