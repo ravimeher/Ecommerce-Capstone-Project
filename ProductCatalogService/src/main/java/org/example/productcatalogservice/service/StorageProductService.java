@@ -1,7 +1,9 @@
 package org.example.productcatalogservice.service;
 
 import org.example.productcatalogservice.dto.UserDto;
+import org.example.productcatalogservice.model.Category;
 import org.example.productcatalogservice.model.Product;
+import org.example.productcatalogservice.repository.CategoryRepo;
 import org.example.productcatalogservice.repository.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +18,8 @@ import java.util.Optional;
 public class StorageProductService implements IProductService {
     @Autowired
     private ProductRepo productRepo;
+    @Autowired
+    private CategoryRepo categoryRepo;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -48,8 +52,17 @@ public class StorageProductService implements IProductService {
 
     @Override
     public Product createProduct(Product product) {
-        Product newProduct = productRepo.save(product);
-        return newProduct;
+        Category category = product.getCategory();
+        Optional<Category> presentCategory = categoryRepo.findByName(category.getName());
+        if(presentCategory.isPresent()){
+            product.setCategory(presentCategory.get());
+        }
+        {
+            category = categoryRepo.save(product.getCategory());
+        }
+
+        product.setCategory(category);
+        return productRepo.save(product);
     }
 
     @Override

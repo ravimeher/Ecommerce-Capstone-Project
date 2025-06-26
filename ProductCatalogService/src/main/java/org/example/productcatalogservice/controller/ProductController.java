@@ -59,7 +59,6 @@ public class ProductController {
             //return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             throw exception;
         }
-
     }
 
     @PostMapping
