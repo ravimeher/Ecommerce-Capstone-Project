@@ -13,6 +13,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
@@ -29,10 +31,16 @@ public class TableInheritanceExamplesConfig {
     public LocalContainerEntityManagerFactoryBean inheritanceEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("inheritanceDataSource") DataSource dataSource) {
+        Map<String, Object> jpaProps = new HashMap<>();
+        jpaProps.put("hibernate.hbm2ddl.auto", "create");  // pulls from spring.inheritance.jpa.hibernate.ddl-auto
+        jpaProps.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // pulls from spring.inheritance.jpa.database-platform
+        jpaProps.put("hibernate.show_sql", true);
+
         return builder
                 .dataSource(dataSource)
                 .packages("org.example.productcatalogservice.TableInheritanceExample")
                 .persistenceUnit("inheritance")
+                .properties(jpaProps)
                 .build();
     }
 
