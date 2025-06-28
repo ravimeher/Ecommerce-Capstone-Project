@@ -1,10 +1,9 @@
-package org.example.productcatalogservice.TableInhertanceExample.SingleTableClass;
+package org.example.productcatalogservice.TableInheritanceExample.SingleTableClass;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
 
-@Entity(name = "stc_instructor")
+@Entity
 @DiscriminatorValue("instructor")
 public class instructor extends user {
     private String company;

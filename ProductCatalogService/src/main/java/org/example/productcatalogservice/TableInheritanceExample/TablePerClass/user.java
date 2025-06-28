@@ -1,4 +1,4 @@
-package org.example.productcatalogservice.TableInhertanceExample.TablePerClass;
+package org.example.productcatalogservice.TableInheritanceExample.TablePerClass;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,4 +1,4 @@
-package org.example.productcatalogservice.TableInhertanceExample.SingleTableClass;
+package org.example.productcatalogservice.TableInheritanceExample.SingleTableClass;
 
 import jakarta.persistence.*;
 

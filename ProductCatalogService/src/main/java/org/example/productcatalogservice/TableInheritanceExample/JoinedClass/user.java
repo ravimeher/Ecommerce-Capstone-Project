@@ -1,4 +1,4 @@
-package org.example.productcatalogservice.TableInhertanceExample.JoinedClass;
+package org.example.productcatalogservice.TableInheritanceExample.JoinedClass;
 
 import jakarta.persistence.*;
 

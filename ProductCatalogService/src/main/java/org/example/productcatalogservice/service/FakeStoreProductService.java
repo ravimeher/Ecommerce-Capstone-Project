@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-//@Primary
+@Primary
 public class FakeStoreProductService implements IProductService {
 
     private RestTemplateBuilder restTemplateBuilder;
@@ -36,15 +36,15 @@ public class FakeStoreProductService implements IProductService {
     @Override
     public Product getProductById(int id) {
         FakeStoreProductDto fakeStoreProductDto = null;
-        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash()
-                .get("_PRODUCTS",id);
-        if(fakeStoreProductDto != null) {
-            System.out.println("Found in Cache");
-            return  from(fakeStoreProductDto);
-        }
+//        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash()
+//                .get("_PRODUCTS",id);
+//        if(fakeStoreProductDto != null) {
+//            System.out.println("Found in Cache");
+//            return  from(fakeStoreProductDto);
+//        }
         fakeStoreProductDto = fakeStoreAPIClient.getProductById(id);
         System.out.println("Found by calling fakestore");
-        redisTemplate.opsForHash().put("_PRODUCTS",id,fakeStoreProductDto);
+        //redisTemplate.opsForHash().put("_PRODUCTS",id,fakeStoreProductDto);
         return from(fakeStoreProductDto);
     }
 

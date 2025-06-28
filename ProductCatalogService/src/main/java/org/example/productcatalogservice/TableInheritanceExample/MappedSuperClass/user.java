@@ -1,4 +1,4 @@
-package org.example.productcatalogservice.TableInhertanceExample.MappedSuperClass;
+package org.example.productcatalogservice.TableInheritanceExample.MappedSuperClass;
 
 import jakarta.persistence.*;
 
