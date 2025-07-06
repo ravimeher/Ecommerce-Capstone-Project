@@ -67,22 +67,27 @@ High-Level Design (HLD) for Ecommerce Website
       Handles user registration, login, profile management, and password reset.
       Uses MySQL as the primary database for structured user data.
       Uses Kafka to communicate relevant user activities to other services (e.g., a new user registration event can trigger welcome emails or offers).
+      
   4.2 Product Catalog Service
       Manages product listings, details, categorization.
       Uses MySQL.
       Incorporates Elasticsearch for fast product searches, providing features like full-text search and typo correction.
+      
   4.3 Cart Service
       Manages user's shopping cart.
       Uses MongoDB for flexibility in cart structures.
       Uses Redis for fast, in-memory data access (e.g., to quickly retrieve a user’s cart).
+      
   4.4 Order Management Service
       Handles order processing, history, and tracking.
       Uses MySQL.
       Communicates with Payment Service and User Management Service through Kafka for order status updates, payment verifications, etc.
+      
   4.5 Payment Service
       Manages payment gateways and transaction logs.
       Uses MySQL.
       Once the payment is confirmed, it produces a message on Kafka to notify the Order Management Service.
+      
   4.6 Notification Service:
       Manages email and potentially other notifications (e.g., SMS).
       Consumes Kafka messages for events that require user notifications (like registration confirmations, order updates).
