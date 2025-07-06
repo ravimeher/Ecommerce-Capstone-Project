@@ -1,15 +1,19 @@
 package org.example.userauthenticationservice.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.antlr.v4.runtime.misc.Pair;
 import org.example.userauthenticationservice.dtos.*;
 import org.example.userauthenticationservice.exceptions.InvalidTokenException;
 import org.example.userauthenticationservice.models.User;
 import org.example.userauthenticationservice.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/auth")
@@ -53,4 +57,29 @@ public class AuthController {
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+
+    @GetMapping("/login/google")
+    public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
+        String redirectUrl = "http://localhost:9000/oauth2/authorization/google";
+        response.sendRedirect(redirectUrl);
+    }
+
+    @GetMapping("/oauth2/success")
+    public ResponseEntity<LogInResponseDto> oauth2Success(
+            @RequestParam String token,
+            @RequestParam String name,
+            @RequestParam String email
+    ) {
+        LogInResponseDto dto = new LogInResponseDto();
+        dto.setMessage("Google login successful");
+        dto.setUsername(name);
+        dto.setEmail(email);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + token);
+
+        return new ResponseEntity<>(dto, headers, HttpStatus.OK);
+    }
+
+
 }

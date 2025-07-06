@@ -16,6 +16,7 @@ import org.example.userauthenticationservice.models.User;
 import org.example.userauthenticationservice.repositories.RoleRepo;
 import org.example.userauthenticationservice.repositories.SessionRepo;
 import org.example.userauthenticationservice.repositories.UserRepo;
+import org.example.userauthenticationservice.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,8 @@ public class AuthService{
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private SecretKey secretKey;
+    @Autowired
+    private JwtUtil jwtUtil;
 //    @Autowired
 //    private KafkaProducerClient kafkaProducerClient;
     @Autowired
@@ -63,28 +66,12 @@ public class AuthService{
             throw new SessionAlreadyExistsException("User already has an active session");
         }
 
-        //this is to save only string names instead of Role calss as JWT can generate token for string simply
-        List<String> roleNames = user.getRoles().stream()
-                .map(Role::getValue)
-                .collect(Collectors.toList());
-
         //Token Generation
-
-        HashMap<String,Object> claims = new HashMap<>();
-        claims.put("user_id",user.getId());
-        claims.put("name",user.getName());
-        claims.put("email",user.getEmail());
-        claims.put("roles", roleNames);
-        long nowInMills =System.currentTimeMillis();
-        claims.put("issued_at",nowInMills);
-        claims.put("expiry_at",nowInMills+1000000);
-
-
-        String token = Jwts.builder().claims(claims).signWith(secretKey).compact();
+        String token = jwtUtil.generateToken(user);
 
         //sending token and secret used as headers in response
         MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
-        headers.add("JWT_Token",token);
+        headers.add("token",token);
         headers.add("Secret_Used", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
 
         Session session = new Session();
@@ -153,6 +140,7 @@ public class AuthService{
 
         return true;
     }
+
 
 //    public String generateRefreshToken(String token) {
 //        Session session = sessionRepo.findByToken(token).get();
