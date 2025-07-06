@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FakeStoreProductDto implements Serializable {
-    private int id;
+    private long id;
     private String title;
     private String description;
     private Double price;

@@ -13,6 +13,14 @@ import java.util.Set;
 public class Role extends BaseModel {
     private String value;
 
+    public Role(String roleName) {
+        this.value = roleName;
+    }
+
+    public Role() {
+
+    }
+
 //    @ManyToMany(mappedBy = "roleSet")
 //    private Set<User> user;
 }

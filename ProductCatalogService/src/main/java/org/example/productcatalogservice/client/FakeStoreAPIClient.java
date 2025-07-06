@@ -28,7 +28,7 @@ public class FakeStoreAPIClient {
         return List.of(fakeStoreProductDtosArray);
     }
 
-    public FakeStoreProductDto getProductById(int id){
+    public FakeStoreProductDto getProductById(long id){
         ResponseEntity<FakeStoreProductDto> fakeStoreProductDtoResponseEntity = requestForEntity(HttpMethod.GET,"https://fakestoreapi.com/products/{productId}",null,FakeStoreProductDto.class,id);
         if(fakeStoreProductDtoResponseEntity.getBody() != null &&
                 fakeStoreProductDtoResponseEntity.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
@@ -37,12 +37,12 @@ public class FakeStoreAPIClient {
         return null;
     }
 
-    public FakeStoreProductDto replaceProduct(int id, FakeStoreProductDto fakeStoreProductDtoReq){
+    public FakeStoreProductDto replaceProduct(long id, FakeStoreProductDto fakeStoreProductDtoReq){
         FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.PUT,"https://fakestoreapi.com/products/{id}",fakeStoreProductDtoReq,FakeStoreProductDto.class,id).getBody();
         return fakeStoreProductDto;
     }
 
-    public FakeStoreProductDto deleteProduct(int id){
+    public FakeStoreProductDto deleteProduct(long id){
         FakeStoreProductDto fakeStoreProductDto = requestForEntity(HttpMethod.DELETE,"https://fakestoreapi.com/products/{id}",null,FakeStoreProductDto.class,id).getBody();
         return fakeStoreProductDto;
     }

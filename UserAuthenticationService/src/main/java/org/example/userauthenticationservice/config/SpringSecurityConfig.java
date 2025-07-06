@@ -1,4 +1,4 @@
-package org.example.userauthenticationservice.security;
+package org.example.userauthenticationservice.config;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
@@ -11,26 +11,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import javax.crypto.SecretKey;
 
 @Configuration
-public class SpringSecurity {
+public class SpringSecurityConfig {
 
     @Bean
-    SecurityFilterChain getSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain getSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors().disable();
         httpSecurity.csrf().disable();
         httpSecurity.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
         return httpSecurity.build();
     }
 
-    @Bean
-    BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public SecretKey generateSecret(){
-        MacAlgorithm algorithm = Jwts.SIG.HS256;
-        SecretKey secretKey = algorithm.key().build();
-        return secretKey;
-    }
 }
 

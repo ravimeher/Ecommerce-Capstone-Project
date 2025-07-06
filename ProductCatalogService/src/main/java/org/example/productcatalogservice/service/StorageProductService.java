@@ -14,18 +14,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-//@Primary
+@Primary
 public class StorageProductService implements IProductService {
     @Autowired
     private ProductRepo productRepo;
     @Autowired
     private CategoryRepo categoryRepo;
+    @Autowired
+    private FakeStoreProductService fakeStoreProductService;
 
     @Autowired
     private RestTemplate restTemplate;
 
     @Override
-    public Product getProductById(int id) {
+    public Product getProductById(long id) {
         Optional<Product> product = productRepo.findById(id);
         if(product.isPresent()){
             return product.get();
@@ -40,7 +42,7 @@ public class StorageProductService implements IProductService {
     }
 
     @Override
-    public Product replaceProduct(int id, Product product) {
+    public Product replaceProduct(long id, Product product) {
         Product oldProduct = getProductById(id);
         oldProduct.setName(product.getName());
         oldProduct.setDescription(product.getDescription());
@@ -66,7 +68,7 @@ public class StorageProductService implements IProductService {
     }
 
     @Override
-    public Product deleteProduct(int id) {
+    public Product deleteProduct(long id) {
         Product product = getProductById(id);
         product.setCategory(null);
         productRepo.delete(product);
@@ -88,5 +90,14 @@ public class StorageProductService implements IProductService {
         System.out.println("Call was made to user service");
         System.out.println(user.getEmail());
         return product.get();
+    }
+
+    @Override
+    public List<Product> populateFromFakeStore(int count) {
+        List<Product> productsList =  fakeStoreProductService.sendNumberOfProducts(count);
+        for(Product product : productsList){
+            productRepo.save(product);
+        }
+        return productsList;
     }
 }

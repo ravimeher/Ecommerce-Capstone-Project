@@ -5,13 +5,11 @@ import lombok.Setter;
 import org.example.userauthenticationservice.models.Role;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
-public class SignUpRequestDto {
-    private String name;
+public class LogInResponseDto {
+    private String username;
     private String email;
-    private String password;
-    private List<Role> roles;
+    private String message;
 }

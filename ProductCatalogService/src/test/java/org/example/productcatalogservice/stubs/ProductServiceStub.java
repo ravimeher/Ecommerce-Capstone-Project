@@ -12,7 +12,7 @@ import java.util.Map;
 @Service
 //@Primary
 public class ProductServiceStub implements IProductService {
-    Map<Integer, Product> productMap;
+    Map<Long, Product> productMap;
 
     public ProductServiceStub() {
         this.productMap = new HashMap<>();
@@ -20,7 +20,7 @@ public class ProductServiceStub implements IProductService {
 
 
     @Override
-    public Product getProductById(int id) {
+    public Product getProductById(long id) {
         return productMap.get(id);
     }
 
@@ -36,7 +36,7 @@ public class ProductServiceStub implements IProductService {
     }
 
     @Override
-    public Product deleteProduct(int id) {
+    public Product deleteProduct(long id) {
         return productMap.remove(id);
     }
 
@@ -46,7 +46,12 @@ public class ProductServiceStub implements IProductService {
     }
 
     @Override
-    public Product replaceProduct(int id, Product product) {
+    public List<Product> populateFromFakeStore(int count) {
+        return List.of();
+    }
+
+    @Override
+    public Product replaceProduct(long id, Product product) {
         productMap.put(id,product);
         return productMap.get(id);
     }

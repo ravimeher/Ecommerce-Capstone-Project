@@ -7,96 +7,118 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.antlr.v4.runtime.misc.Pair;
-import org.example.userauthenticationservice.client.KafkaProducerClient;
 import org.example.userauthenticationservice.dtos.SendEmailDto;
+import org.example.userauthenticationservice.exceptions.*;
+import org.example.userauthenticationservice.models.Role;
 import org.example.userauthenticationservice.models.Session;
 import org.example.userauthenticationservice.models.SessionState;
 import org.example.userauthenticationservice.models.User;
+import org.example.userauthenticationservice.repositories.RoleRepo;
 import org.example.userauthenticationservice.repositories.SessionRepo;
 import org.example.userauthenticationservice.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import javax.crypto.SecretKey;
+import javax.management.relation.InvalidRoleInfoException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class AuthService implements IAuthService{
+public class AuthService{
 
     @Autowired
     private UserRepo userRepo;
     @Autowired
     private SessionRepo sessionRepo;
     @Autowired
+    private RoleRepo roleRepo;
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private SecretKey secretKey;
-    @Autowired
-    private KafkaProducerClient kafkaProducerClient;
+//    @Autowired
+//    private KafkaProducerClient kafkaProducerClient;
     @Autowired
     private ObjectMapper objectMapper;
 
-    public User signUp(String email,String password) throws JsonProcessingException {
+    public User signUp(String name,String email, String password, List<Role> roles) {
         Optional<User> user = userRepo.findByEmail(email);
         if(user.isPresent()){
-            return null;
+            throw new UserAlreadyExistsException("User already exists");
+        }
+        Set<String> allowedRoles = Set.of("ADMIN", "USER");
+        List<Role> finalRoles = new ArrayList<>();
+
+        for(Role role : roles){
+            String roleName = role.getValue();
+            if(!allowedRoles.contains(roleName)){
+                throw new InvalidRoleException("Role does not exist");
+            }
+            Role dbRole = (Role) roleRepo.findByValue(roleName)
+                    .orElseGet(() -> roleRepo.save(new Role(roleName)));
+            finalRoles.add(dbRole);
         }
         User newUser = new User();
+        newUser.setName(name);
         newUser.setEmail(email);
         newUser.setPassword(bCryptPasswordEncoder.encode(password));
+        newUser.setRoles(finalRoles);
         userRepo.save(newUser);
         //send email to user
-        SendEmailDto sendEmailDto=new SendEmailDto();
-        sendEmailDto.setTo(newUser.getEmail());
-        sendEmailDto.setFrom("anuragbatch@gmail.com");
-        sendEmailDto.setSubject("User Registration");
-        sendEmailDto.setBody("Congratulations on Signing up");
-        kafkaProducerClient.SendMessage("signup",objectMapper.writeValueAsString(sendEmailDto));
+//        SendEmailDto sendEmailDto=new SendEmailDto();
+//        sendEmailDto.setTo(newUser.getEmail());
+//        sendEmailDto.setFrom("anuragbatch@gmail.com");
+//        sendEmailDto.setSubject("User Registration");
+//        sendEmailDto.setBody("Congratulations on Signing up");
+//        kafkaProducerClient.SendMessage("signup",objectMapper.writeValueAsString(sendEmailDto));
         return newUser;
     }
 
     public Pair<User, MultiValueMap<String, String>> logIn(String email, String password){
         Optional<User> optionalUser = userRepo.findByEmail(email);
         if(!optionalUser.isPresent()){
-            return null;
+            throw new UserNotFoundException("User not found");
         }
         User user = optionalUser.get();
         if(!bCryptPasswordEncoder.matches(password,user.getPassword())){
-            return null;
+            throw new InvalidPasswordException("Enter Valid Password");
         }
-        //Token Generation
+        //See if user already logged in
+        Optional<Session> optionalExistingSession = sessionRepo.findByUserAndSessionState(user,SessionState.ACTIVE);
+        if(optionalExistingSession.isPresent()){
+            throw new SessionAlreadyExistsException("User already has an active session");
+        }
 
-//        String message = "{\n" +
-//                "   \"email\": \"anurag@scaler.com\",\n" +
-//                "   \"roles\": [\n" +
-//                "      \"instructor\",\n" +
-//                "      \"buddy\"\n" +
-//                "   ],\n" +
-//                "   \"expirationDate\": \"25thJuly2024\"\n" +
-//                "}";
+        //this is to save only string names instead of Role calss as JWT can generate token for string simply
+        List<String> roleNames = user.getRoles().stream()
+                .map(Role::getValue)
+                .collect(Collectors.toList());
+
+        //Token Generation
 
         HashMap<String,Object> claims = new HashMap<>();
         claims.put("user_id",user.getId());
+        claims.put("name",user.getName());
         claims.put("email",user.getEmail());
-        claims.put("roles",user.getRoleSet());
+        claims.put("roles", roleNames);
         long nowInMills =System.currentTimeMillis();
-        claims.put("iat",nowInMills);
-        claims.put("expiry",nowInMills+1000000);
+        claims.put("issued_at",nowInMills);
+        claims.put("expiry_at",nowInMills+1000000);
 
-//        byte[] content = message.getBytes(StandardCharsets.UTF_8);
-//        MacAlgorithm algorithm = Jwts.SIG.HS256;
-//        SecretKey secretKey = algorithm.key().build();
-//        String token = Jwts.builder().content(content).signWith(secretKey).compact();
 
         String token = Jwts.builder().claims(claims).signWith(secretKey).compact();
+
+        //sending token and secret used as headers in response
         MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
-        headers.add(HttpHeaders.SET_COOKIE,token);
+        headers.add("JWT_Token",token);
+        headers.add("Secret_Used", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
 
         Session session = new Session();
         session.setSessionState(SessionState.ACTIVE);
@@ -107,19 +129,36 @@ public class AuthService implements IAuthService{
         return new Pair<User,MultiValueMap<String,String>>(user,headers);
     }
 
-    @Override
+    public String logout(String email){
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new UserNotFoundException("Enter Correct Email"));
+        Optional<Session> optionalSession = sessionRepo.findByUserAndSessionState(user,SessionState.ACTIVE);
+        Session session = optionalSession.get();
+        if(session.getSessionState().equals(SessionState.ACTIVE)){
+            session.setSessionState(SessionState.EXPIRED);
+        }
+        sessionRepo.save(session);
+        optionalSession = sessionRepo.findByUserAndSessionState(user,SessionState.ACTIVE);
+
+        if(optionalSession.isEmpty()){
+            return "Successfully Logged Out";
+        }else {
+            throw new RuntimeException("Unable to Log Out");
+        }
+    }
+
     public Boolean validateToken(String token, Long userId) {
         //first check token is valid
         Optional<Session> optionalSession = sessionRepo.findByToken(token);
         if(optionalSession.isEmpty())
-            return false;
+            throw new InvalidTokenException("Invalid Token");
+
         Session session = optionalSession.get();
         String dbtoken = session.getToken();
-
+        //send secret and validate
         JwtParser jwtParser = Jwts.parser().verifyWith(secretKey).build();
         Claims claims = jwtParser.parseSignedClaims(dbtoken).getPayload();
 
-        Long tokenExpiry = (Long)claims.get("expiry");
+        Long tokenExpiry = (Long)claims.get("expiry_at");
 
         Long currentTime = System.currentTimeMillis();
 
@@ -130,8 +169,11 @@ public class AuthService implements IAuthService{
             System.out.println(
                     "Token is expired");
             //set state to expired in my DB
-            return false;
+            session.setSessionState(SessionState.EXPIRED);
+            sessionRepo.save(session);
+            throw new InvalidTokenException("Token is expired");
         }
+
         //Below we can validate other fields as well from claims
 
         User user = userRepo.findById(userId).get();
@@ -139,7 +181,7 @@ public class AuthService implements IAuthService{
         String tokenEmail = (String)claims.get("email");
         if(!email.equals(tokenEmail)) {
             System.out.println("email mismatch");
-            return false;
+            throw new InvalidTokenException("email mismatch with user and token");
         }
 
         return true;

@@ -6,14 +6,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
 @Entity
 public class User extends BaseModel{
+    private String name;
     private String email;
     private String password;
     @ManyToMany
-    private Set<Role> roleSet = new HashSet<>();
+    private List<Role> roles;
 }

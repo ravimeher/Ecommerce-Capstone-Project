@@ -42,7 +42,7 @@ public class ProductController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable("id") int id) {
+    public ResponseEntity<ProductDto> getProductById(@PathVariable("id") long id) {
         try {
             if(id<1 || id >20){
                 throw new IllegalArgumentException("id is not valid");
@@ -69,16 +69,26 @@ public class ProductController {
     }
 
     @PutMapping("{id}")
-    public ProductDto  replaceProduct(@PathVariable int id,@RequestBody ProductDto productDto) {
+    public ProductDto  replaceProduct(@PathVariable long id,@RequestBody ProductDto productDto) {
         Product product = from(productDto);
         Product result = productService.replaceProduct(id,product);
         return from(result);
     }
 
     @DeleteMapping("{id}")
-    public ProductDto deleteProduct(@PathVariable int id) {
+    public ProductDto deleteProduct(@PathVariable long id) {
         Product product = productService.deleteProduct(id);
         return from(product);
+    }
+
+    @GetMapping("fill/{count}")
+    public List<ProductDto> populateProductsFromFakeStore(@PathVariable int count){
+        List<Product> products = productService.populateFromFakeStore(count);
+        List<ProductDto> productDtos = new ArrayList<>();
+        for (Product product : products) {
+            productDtos.add(from(product));
+        }
+        return productDtos;
     }
 
     private Product from(ProductDto productDto){
@@ -115,7 +125,7 @@ public class ProductController {
         }
         else
             productDto.setCategory(null);
-        productDto.setIsPrivate(product.getIsPrivate());
+        //productDto.setIsPrivate(product.getIsPrivate());
         return productDto;
     }
 
