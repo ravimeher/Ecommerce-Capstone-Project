@@ -38,8 +38,6 @@ public class AuthService{
     @Autowired
     private SessionRepo sessionRepo;
     @Autowired
-    private RoleRepo roleRepo;
-    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private SecretKey secretKey;
@@ -48,38 +46,7 @@ public class AuthService{
     @Autowired
     private ObjectMapper objectMapper;
 
-    public User signUp(String name,String email, String password, List<Role> roles) {
-        Optional<User> user = userRepo.findByEmail(email);
-        if(user.isPresent()){
-            throw new UserAlreadyExistsException("User already exists");
-        }
-        Set<String> allowedRoles = Set.of("ADMIN", "USER");
-        List<Role> finalRoles = new ArrayList<>();
 
-        for(Role role : roles){
-            String roleName = role.getValue();
-            if(!allowedRoles.contains(roleName)){
-                throw new InvalidRoleException("Role does not exist");
-            }
-            Role dbRole = (Role) roleRepo.findByValue(roleName)
-                    .orElseGet(() -> roleRepo.save(new Role(roleName)));
-            finalRoles.add(dbRole);
-        }
-        User newUser = new User();
-        newUser.setName(name);
-        newUser.setEmail(email);
-        newUser.setPassword(bCryptPasswordEncoder.encode(password));
-        newUser.setRoles(finalRoles);
-        userRepo.save(newUser);
-        //send email to user
-//        SendEmailDto sendEmailDto=new SendEmailDto();
-//        sendEmailDto.setTo(newUser.getEmail());
-//        sendEmailDto.setFrom("anuragbatch@gmail.com");
-//        sendEmailDto.setSubject("User Registration");
-//        sendEmailDto.setBody("Congratulations on Signing up");
-//        kafkaProducerClient.SendMessage("signup",objectMapper.writeValueAsString(sendEmailDto));
-        return newUser;
-    }
 
     public Pair<User, MultiValueMap<String, String>> logIn(String email, String password){
         Optional<User> optionalUser = userRepo.findByEmail(email);

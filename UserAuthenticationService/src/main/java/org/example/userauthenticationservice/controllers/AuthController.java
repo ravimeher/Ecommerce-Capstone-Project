@@ -18,23 +18,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto signUpRequestDto){
-        SignUpResponseDto responseDto = new SignUpResponseDto();
-
-        User user = authService.signUp(signUpRequestDto.getName(),
-                signUpRequestDto.getEmail(),
-                signUpRequestDto.getPassword(),
-                signUpRequestDto.getRoles());
-
-        responseDto.setEmail(user.getEmail());
-        responseDto.setName(user.getName());
-        responseDto.setRoles(user.getRoles());
-        responseDto.setMessage("User Created Successfully");
-
-        return new ResponseEntity<>(responseDto,HttpStatus.CREATED);
-    }
-
     @PostMapping("/login")
     public ResponseEntity<LogInResponseDto> logIn(@RequestBody LogInRequestDto logInRequestDto){
         LogInResponseDto responseDto = new LogInResponseDto();
@@ -47,7 +30,7 @@ public class AuthController {
         return new ResponseEntity<>(responseDto,userWithHeaders.b,HttpStatus.OK);
     }
 
-    @PostMapping("/validate")
+    @PostMapping("/validateToken")
     public ResponseEntity<ValidateTokenResponseDto> validate(@RequestBody ValidateTokenRequestDto validateTokenDto){
         ValidateTokenResponseDto responseDto = new ValidateTokenResponseDto();
         System.out.println(validateTokenDto.getToken());
@@ -59,10 +42,6 @@ public class AuthController {
         }
         return new ResponseEntity<>(responseDto,HttpStatus.OK);
 
-    }
-
-    public ResponseEntity<Boolean> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto){
-        return null;
     }
 
     @PostMapping("/logout")

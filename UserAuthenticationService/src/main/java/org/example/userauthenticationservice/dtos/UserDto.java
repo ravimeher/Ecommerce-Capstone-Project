@@ -11,6 +11,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class UserDto {
+    private String name;
     private String email;
     private List<Role> roles;
 }
