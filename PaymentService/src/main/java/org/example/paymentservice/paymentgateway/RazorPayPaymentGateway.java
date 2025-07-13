@@ -1,6 +1,7 @@
 package org.example.paymentservice.paymentgateway;
 
 import com.razorpay.PaymentLink;
+import org.example.paymentservice.dtos.PaymentResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.json.JSONObject;
@@ -15,33 +16,47 @@ public class RazorPayPaymentGateway implements PaymentGatewayStrategy{
     private RazorpayClient razorpayClient;
 
     @Override
-    public String getPaymentLink(String name,String orderId,String number,Long amount) {
+    public PaymentResponseDto getPaymentLink(String name,String emailId, Long orderId, Long amount) {
         try {
         JSONObject paymentLinkRequest = new JSONObject();
         paymentLinkRequest.put("amount",amount);
         paymentLinkRequest.put("currency","INR");
-        paymentLinkRequest.put("accept_partial",true);
-        paymentLinkRequest.put("first_min_partial_amount",100);
-        paymentLinkRequest.put("expire_by",1729672001);
-        paymentLinkRequest.put("reference_id",orderId);
-        paymentLinkRequest.put("description","Payment for policy no #23456");
+        long expiresBy = System.currentTimeMillis() / 1000 + 16 * 60;
+        paymentLinkRequest.put("expire_by", expiresBy);
+
+        paymentLinkRequest.put("reference_id",orderId.toString());
+        paymentLinkRequest.put("description","Payment for orderId "+ orderId);
+
         JSONObject customer = new JSONObject();
-        customer.put("name",number);
-        customer.put("contact",name);
-        customer.put("email","gaurav.kumar@example.com");
+        customer.put("name",name);
+        customer.put("email",emailId);
+
         paymentLinkRequest.put("customer",customer);
+
         JSONObject notify = new JSONObject();
-        notify.put("sms",true);
         notify.put("email",true);
+
         paymentLinkRequest.put("notify",notify);
         paymentLinkRequest.put("reminder_enable",true);
+
         JSONObject notes = new JSONObject();
-        notes.put("policy_name","Jeevan Bima");
+        notes.put("reference_id", orderId.toString());
+
         paymentLinkRequest.put("notes",notes);
-        paymentLinkRequest.put("callback_url","https://scaler.com/");
+        paymentLinkRequest.put("callback_url","http://localhost:9090/payment/callback");
         paymentLinkRequest.put("callback_method","get");
+
         PaymentLink payment = razorpayClient.paymentLink.create(paymentLinkRequest);
-        return payment.get("short_url").toString();
+
+        PaymentResponseDto responseDto = new PaymentResponseDto();
+        responseDto.setPaymentLink(payment.get("short_url").toString());
+        responseDto.setCurrency(payment.get("currency").toString());
+        responseDto.setOrderId(orderId);
+        Number amountValue = (Number) payment.get("amount");
+        responseDto.setAmount(amountValue.longValue());
+        responseDto.setStatus(payment.get("status").toString());
+
+        return responseDto;
         } catch (RazorpayException e) {
              throw new RuntimeException(e);
         }

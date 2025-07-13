@@ -1,8 +1,10 @@
 package org.example.productcatalogservice.stubs;
 
+import org.example.productcatalogservice.dto.SortParam;
 import org.example.productcatalogservice.model.Product;
 import org.example.productcatalogservice.service.IProductService;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -48,6 +50,16 @@ public class ProductServiceStub implements IProductService {
     @Override
     public List<Product> populateFromFakeStore(int count) {
         return List.of();
+    }
+
+    @Override
+    public List<Product> getAllProductsByCategory(Long categoryId) {
+        return List.of();
+    }
+
+    @Override
+    public Page<Product> searchProducts(String query, Integer pageNumber, Integer pageSize, List<SortParam> sortParamList) {
+        return null;
     }
 
     @Override

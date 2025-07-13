@@ -1,5 +1,7 @@
 package org.example.paymentservice.paymentgateway;
 
+import org.example.paymentservice.dtos.PaymentResponseDto;
+
 public interface PaymentGatewayStrategy {
-    String getPaymentLink(String name,String orderId,String number,Long amount);
+    PaymentResponseDto getPaymentLink(String name, String emailId, Long orderId, Long amount);
 }

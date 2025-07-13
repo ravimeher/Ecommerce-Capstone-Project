@@ -23,63 +23,79 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<LogInResponseDto> logIn(@RequestBody LogInRequestDto logInRequestDto){
+    public ResponseEntity<LogInResponseDto> logIn(@RequestBody LogInRequestDto logInRequestDto) {
         LogInResponseDto responseDto = new LogInResponseDto();
 
-        Pair<User, MultiValueMap<String,String>> userWithHeaders = authService.logIn(logInRequestDto.getEmail(), logInRequestDto.getPassword());
+        Pair<User, MultiValueMap<String, String>> userWithHeaders = authService.logIn(logInRequestDto.getEmail(), logInRequestDto.getPassword());
         User user = userWithHeaders.a;
         responseDto.setUsername(user.getName());
         responseDto.setEmail(user.getEmail());
         responseDto.setMessage("User Logged In Successfully");
-        return new ResponseEntity<>(responseDto,userWithHeaders.b,HttpStatus.OK);
+        return new ResponseEntity<>(responseDto, userWithHeaders.b, HttpStatus.OK);
     }
 
-    @PostMapping("/validateToken")
-    public ResponseEntity<ValidateTokenResponseDto> validate(@RequestBody ValidateTokenRequestDto validateTokenDto){
+    @PostMapping("/validateTokenByUserId")
+    public ResponseEntity<ValidateTokenResponseDto> validate(@RequestBody ValidateTokenRequestDto validateTokenDto) {
         ValidateTokenResponseDto responseDto = new ValidateTokenResponseDto();
         System.out.println(validateTokenDto.getToken());
-        Boolean response = authService.validateToken(validateTokenDto.getToken(), validateTokenDto.getUserId());
-        if(response){
+        Boolean response = authService.validateTokenByUserId(validateTokenDto.getToken(), validateTokenDto.getUserId());
+        if (response) {
             responseDto.setMessage("Token Validated Successfully");
-        }else {
+        } else {
             throw new InvalidTokenException("Invalid Token");
         }
-        return new ResponseEntity<>(responseDto,HttpStatus.OK);
-
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<LogOutResponseDto> logOut(@RequestBody LogOutRequestDto logOutRequestDto){
-        LogOutResponseDto responseDto = new LogOutResponseDto();
-
-        String message = authService.logout(logOutRequestDto.getEmail());
-        responseDto.setMessage(message);
-
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+
     }
 
-    @GetMapping("/login/google")
-    public void redirectToGoogleLogin(HttpServletResponse response) throws IOException {
-        String redirectUrl = "http://localhost:9000/oauth2/authorization/google";
-        response.sendRedirect(redirectUrl);
+    @GetMapping("/validateToken/")
+    public UserDto validateToken(@RequestParam String token) {
+        System.out.println(token + "token to validate");
+        User user = authService.validateToken(token);
+        if (user == null)
+            return null;
+        return from(user);
     }
 
-    @GetMapping("/oauth2/success")
-    public ResponseEntity<LogInResponseDto> oauth2Success(
-            @RequestParam String token,
-            @RequestParam String name,
-            @RequestParam String email
-    ) {
-        LogInResponseDto dto = new LogInResponseDto();
-        dto.setMessage("Google login successful");
-        dto.setUsername(name);
-        dto.setEmail(email);
+        @PostMapping("/logout")
+        public ResponseEntity<LogOutResponseDto> logOut (@RequestBody LogOutRequestDto logOutRequestDto){
+            LogOutResponseDto responseDto = new LogOutResponseDto();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + token);
+            String message = authService.logout(logOutRequestDto.getEmail());
+            responseDto.setMessage(message);
 
-        return new ResponseEntity<>(dto, headers, HttpStatus.OK);
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        }
+
+        @GetMapping("/login/google")
+        public void redirectToGoogleLogin (HttpServletResponse response) throws IOException {
+            String redirectUrl = "http://localhost:9000/oauth2/authorization/google";
+            response.sendRedirect(redirectUrl);
+        }
+
+        @GetMapping("/oauth2/success")
+        public ResponseEntity<LogInResponseDto> oauth2Success (
+                @RequestParam String token,
+                @RequestParam String name,
+                @RequestParam String email
+        ){
+            LogInResponseDto dto = new LogInResponseDto();
+            dto.setMessage("Google login successful");
+            dto.setUsername(name);
+            dto.setEmail(email);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + token);
+
+            return new ResponseEntity<>(dto, headers, HttpStatus.OK);
+        }
+
+    private UserDto from(User user) {
+        UserDto userDto = new UserDto();
+        userDto.setName(user.getName());
+        userDto.setEmail(user.getEmail());
+        userDto.setRoles(user.getRoles());
+        return userDto;
     }
-
-
 }
+

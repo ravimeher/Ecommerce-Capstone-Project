@@ -27,7 +27,7 @@ class ProductRepoTest {
 //        List<Product> products = productRepo.findAllByStateActive();
 //        List<Product> products = productRepo.findAllByOrderByPriceDesc();
 //        String productName = productRepo.findProductNameById(1);
-        Optional<Product> optionalProduct = productRepo.findById(1);
+        Optional<Product> optionalProduct = productRepo.findById(1L);
         if(optionalProduct.isPresent()) {
             System.out.println(optionalProduct.get().getName());
         }

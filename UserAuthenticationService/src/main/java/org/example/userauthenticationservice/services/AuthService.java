@@ -18,6 +18,7 @@ import org.example.userauthenticationservice.repositories.SessionRepo;
 import org.example.userauthenticationservice.repositories.UserRepo;
 import org.example.userauthenticationservice.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,7 +42,7 @@ public class AuthService{
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
-    private SecretKey secretKey;
+    private SecretKey jwtSecretKey;
     @Autowired
     private JwtUtil jwtUtil;
 //    @Autowired
@@ -72,7 +73,7 @@ public class AuthService{
         //sending token and secret used as headers in response
         MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
         headers.add("token",token);
-        headers.add("Secret_Used", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+        headers.add("Secret_Used", Base64.getEncoder().encodeToString(jwtSecretKey.getEncoded()));
 
         Session session = new Session();
         session.setSessionState(SessionState.ACTIVE);
@@ -100,7 +101,7 @@ public class AuthService{
         }
     }
 
-    public Boolean validateToken(String token, Long userId) {
+    public Boolean validateTokenByUserId(String token, Long userId) {
         //first check token is valid
         Optional<Session> optionalSession = sessionRepo.findByToken(token);
         if(optionalSession.isEmpty())
@@ -108,8 +109,10 @@ public class AuthService{
 
         Session session = optionalSession.get();
         String dbtoken = session.getToken();
+        System.out.println(Base64.getEncoder().encodeToString(jwtSecretKey.getEncoded()));
+
         //send secret and validate
-        JwtParser jwtParser = Jwts.parser().verifyWith(secretKey).build();
+        JwtParser jwtParser = Jwts.parser().verifyWith(jwtSecretKey).build();
         Claims claims = jwtParser.parseSignedClaims(dbtoken).getPayload();
 
         Long tokenExpiry = (Long)claims.get("expiry_at");
@@ -139,6 +142,38 @@ public class AuthService{
         }
 
         return true;
+    }
+
+    public User validateToken(String token) {
+        //first check token is valid
+        Optional<Session> optionalSession = sessionRepo.findByToken(token);
+        if(optionalSession.isEmpty())
+            throw new InvalidTokenException("Invalid Token");
+
+        Session session = optionalSession.get();
+        String dbtoken = session.getToken();
+        System.out.println(Base64.getEncoder().encodeToString(jwtSecretKey.getEncoded()));
+
+        //send secret and validate
+        JwtParser jwtParser = Jwts.parser().verifyWith(jwtSecretKey).build();
+        Claims claims = jwtParser.parseSignedClaims(dbtoken).getPayload();
+
+        Long tokenExpiry = (Long)claims.get("expiry_at");
+
+        Long currentTime = System.currentTimeMillis();
+
+        System.out.println(tokenExpiry);
+        System.out.println(currentTime);
+
+        if(currentTime > tokenExpiry) {
+            System.out.println(
+                    "Token is expired");
+            //set state to expired in my DB
+            session.setSessionState(SessionState.EXPIRED);
+            sessionRepo.save(session);
+            throw new InvalidTokenException("Token is expired");
+        }
+        return session.getUser();
     }
 
 

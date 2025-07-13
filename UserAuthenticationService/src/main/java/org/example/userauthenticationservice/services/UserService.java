@@ -1,5 +1,10 @@
 package org.example.userauthenticationservice.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.userauthenticationservice.client.KafkaProducerClient;
+import org.example.userauthenticationservice.dtos.ResetPasswordRequestDto;
+import org.example.userauthenticationservice.dtos.SendEmailDto;
 import org.example.userauthenticationservice.exceptions.*;
 import org.example.userauthenticationservice.models.PasswordResetToken;
 import org.example.userauthenticationservice.models.Role;
@@ -26,6 +31,10 @@ public class UserService {
     private ResetTokenRepo resetTokenRepo;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private KafkaProducerClient kafkaProducerClient;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public User getUser(Long uid) {
         Optional<User> user = userRepo.findById(uid);
@@ -35,7 +44,7 @@ public class UserService {
         return user.get();
     }
 
-    public User signUp(String name,String email, String password, List<Role> roles) {
+    public User signUp(String name,String email, String password, List<Role> roles) throws JsonProcessingException {
         Optional<User> user = userRepo.findByEmail(email);
         if(user.isPresent()){
             throw new UserAlreadyExistsException("User already exists");
@@ -48,17 +57,17 @@ public class UserService {
         newUser.setRoles(finalRoles);
         userRepo.save(newUser);
         //send email to user
-//        SendEmailDto sendEmailDto=new SendEmailDto();
-//        sendEmailDto.setTo(newUser.getEmail());
-//        sendEmailDto.setFrom("anuragbatch@gmail.com");
-//        sendEmailDto.setSubject("User Registration");
-//        sendEmailDto.setBody("Congratulations on Signing up");
-//        kafkaProducerClient.SendMessage("signup",objectMapper.writeValueAsString(sendEmailDto));
+        SendEmailDto sendEmailDto=new SendEmailDto();
+        sendEmailDto.setTo(newUser.getEmail());
+        sendEmailDto.setSubject("User Registration");
+        sendEmailDto.setBody("Congratulations on Signing up");
+
+        kafkaProducerClient.SendMessage("sendEmail",objectMapper.writeValueAsString(sendEmailDto));
         return newUser;
     }
 
 
-    public String forgotPassword(String email) {
+    public String forgotPassword(String email) throws JsonProcessingException {
         Optional<User> userOpt = userRepo.findByEmail(email);
         if (userOpt.isEmpty()) throw new UserNotFoundException("User not Found");
 
@@ -69,10 +78,15 @@ public class UserService {
         PasswordResetToken resetToken = new PasswordResetToken(token, user, expiry);
         resetTokenRepo.save(resetToken);
 
-        String resetUrl = "https://yourfrontend.com/reset-password?token=" + token;
+        String resetUrl = "http://localhost:9000/user/reset-password?token=" + token;
+
+        SendEmailDto sendEmailDto=new SendEmailDto();
+        sendEmailDto.setTo(user.getEmail());
+        sendEmailDto.setSubject("Password Reset Link");
+        sendEmailDto.setBody("Click here to reset password: " + resetUrl);
 
         // Send email using Kafka/EmailService
-        //emailService.send(user.getEmail(), "Reset Password", "Click here: " + resetUrl);
+        kafkaProducerClient.SendMessage("sendEmail",objectMapper.writeValueAsString(sendEmailDto));
 
         return "Reset password link sent";
     }

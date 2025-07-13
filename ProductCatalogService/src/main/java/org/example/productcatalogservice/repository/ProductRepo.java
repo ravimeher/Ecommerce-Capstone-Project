@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepo extends JpaRepository<Product,Integer> {
+public interface ProductRepo extends JpaRepository<Product,Long> {
 
     Page<Product> findProductsByName(String query, Pageable pageable);
     Optional<Product> findById(Long id);
@@ -32,4 +32,5 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
     @Query("select c.name from Product p join Category c on c.id = p.category.id where p.id=:productid")//named arguments using id:productId
     String findCategoryNameFromProductId(int productid);
 
+    List<Product> findAllByCategoryId(Long categoryId);
 }

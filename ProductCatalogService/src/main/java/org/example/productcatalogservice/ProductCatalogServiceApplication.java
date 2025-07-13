@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EntityScan({
-        "org.example.productcatalogservice.model",
-        "org.example.productcatalogservice.TableInheritanceExample"
-})
+//@EntityScan({
+//        "org.example.productcatalogservice.model",
+//        "org.example.productcatalogservice.TableInheritanceExample"
+//})
 @EnableJpaAuditing
 public class ProductCatalogServiceApplication {
 

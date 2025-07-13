@@ -19,14 +19,7 @@ import javax.mail.internet.MimeMultipart;
 
 public class EmailUtil {
 
-    /**
-     * Utility method to send simple HTML email
-     * @param session
-     * @param toEmail
-     * @param subject
-     * @param body
-     */
-    public static void sendEmail(Session session, String toEmail, String subject, String body){
+    public static void sendEmail(Session session, String fromEmail, String toEmail, String subject, String body){
         try
         {
             MimeMessage msg = new MimeMessage(session);
@@ -35,24 +28,22 @@ public class EmailUtil {
             msg.addHeader("format", "flowed");
             msg.addHeader("Content-Transfer-Encoding", "8bit");
 
-            msg.setFrom(new InternetAddress("anuragbatch@gmail.com", "Anurag Khanna"));
-
-            msg.setReplyTo(InternetAddress.parse("anuragbatch@gmail.com", false));
+            msg.setFrom(new InternetAddress(fromEmail));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+            msg.setReplyTo(InternetAddress.parse(fromEmail, false));
 
             msg.setSubject(subject, "UTF-8");
-
             msg.setText(body, "UTF-8");
-
             msg.setSentDate(new Date());
 
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
-            System.out.println("Message is ready");
             Transport.send(msg);
 
-            System.out.println("EMail Sent Successfully!!");
+            System.out.println(subject + " Email Sent Successfully!!");
         }
         catch (Exception e) {
+            System.out.println(e.getMessage() + " : Exception");
             e.printStackTrace();
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 }

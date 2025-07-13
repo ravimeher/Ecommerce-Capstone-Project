@@ -14,7 +14,7 @@ public class FakeStoreProductDto implements Serializable {
     private String title;
     private String description;
     private Double price;
-    private String imageUrl;
+    private String image;
     private String category;
 //    private FakeStoreRatingDto fakeStoreRatingDto;
 }

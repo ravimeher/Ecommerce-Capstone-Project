@@ -1,5 +1,8 @@
 package org.example.userauthenticationservice.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.QueryParam;
 import org.example.userauthenticationservice.dtos.*;
 import org.example.userauthenticationservice.models.User;
 import org.example.userauthenticationservice.services.UserService;
@@ -7,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -16,7 +21,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto signUpRequestDto){
+    public ResponseEntity<SignUpResponseDto> signUp(@RequestBody SignUpRequestDto signUpRequestDto) throws JsonProcessingException {
         SignUpResponseDto responseDto = new SignUpResponseDto();
 
         User user = userService.signUp(signUpRequestDto.getName(),
@@ -41,14 +46,24 @@ public class UserController {
 
     //forgot password
     @PostMapping("/forgot-password")
-    public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(@RequestBody ForgotPasswordRequestDto forgotPasswordDto){
+    public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(@RequestBody ForgotPasswordRequestDto forgotPasswordDto) throws JsonProcessingException {
         ForgotPasswordResponseDto responseDto = new ForgotPasswordResponseDto();
         String message = userService.forgotPassword(forgotPasswordDto.getEmail());
         responseDto.setMessage(message);
         return new ResponseEntity<>(responseDto,HttpStatus.OK);
     }
 
-    @PostMapping("/reset-password")
+    @GetMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponseDto> resetPasswordRedirect(@QueryParam("token")String token){
+
+        ResetPasswordRequestDto resetPasswordRequestDto = new ResetPasswordRequestDto();
+        resetPasswordRequestDto.setToken(token);
+        resetPasswordRequestDto.setNewPassword(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+        ResponseEntity<ResetPasswordResponseDto> response = resetPassword(resetPasswordRequestDto);
+        return response;
+    }
+
+    @PostMapping("/Reset-password")
     public ResponseEntity<ResetPasswordResponseDto> resetPassword(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
         ResetPasswordResponseDto responseDto = new ResetPasswordResponseDto();
         String message = userService.resetPassword(resetPasswordRequestDto.getToken(),resetPasswordRequestDto.getNewPassword());

@@ -1,14 +1,15 @@
 package org.example.productcatalogservice.dto;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.productcatalogservice.model.Role;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class UserDto {
+    private String name;
     private String email;
-//    private Set<Role> roleSet = new HashSet<>();
+    private List<Role> roles;
 }

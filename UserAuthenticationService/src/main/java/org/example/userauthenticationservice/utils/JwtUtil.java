@@ -1,12 +1,14 @@
 package org.example.userauthenticationservice.utils;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.example.userauthenticationservice.models.Role;
 import org.example.userauthenticationservice.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 @Component
@@ -14,7 +16,7 @@ import java.util.List;
 public class JwtUtil {
 
     @Autowired
-    private SecretKey secretKey;
+    private SecretKey jwtSecretKey;
 
     public String generateToken(User user) {
         List<String> roleNames = user.getRoles().stream()
@@ -30,6 +32,7 @@ public class JwtUtil {
         long nowInMills =System.currentTimeMillis();
         claims.put("issued_at",nowInMills);
         claims.put("expiry_at",nowInMills+1000000);
-        return  Jwts.builder().claims(claims).signWith(secretKey).compact();
+        System.out.println(Base64.getEncoder().encodeToString(jwtSecretKey.getEncoded()));
+        return  Jwts.builder().claims(claims).signWith(jwtSecretKey, Jwts.SIG.HS256).compact();
     }
 }

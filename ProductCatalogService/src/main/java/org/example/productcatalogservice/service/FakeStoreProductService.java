@@ -3,12 +3,14 @@ package org.example.productcatalogservice.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.productcatalogservice.client.FakeStoreAPIClient;
 import org.example.productcatalogservice.dto.FakeStoreProductDto;
+import org.example.productcatalogservice.dto.SortParam;
 import org.example.productcatalogservice.model.Category;
 import org.example.productcatalogservice.model.Product;
 import org.example.productcatalogservice.repository.CategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -40,15 +42,15 @@ public class FakeStoreProductService implements IProductService {
     @Override
     public Product getProductById(long id) {
         FakeStoreProductDto fakeStoreProductDto = null;
-//        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash()
-//                .get("_PRODUCTS",id);
-//        if(fakeStoreProductDto != null) {
-//            System.out.println("Found in Cache");
-//            return  from(fakeStoreProductDto);
-//        }
+        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash()
+                .get("_PRODUCTS",id);
+        if(fakeStoreProductDto != null) {
+            System.out.println("Found in Cache");
+            return  from(fakeStoreProductDto);
+        }
         fakeStoreProductDto = fakeStoreAPIClient.getProductById(id);
         System.out.println("Found by calling fakestore");
-        //redisTemplate.opsForHash().put("_PRODUCTS",id,fakeStoreProductDto);
+        redisTemplate.opsForHash().put("_PRODUCTS",id,fakeStoreProductDto);
         return from(fakeStoreProductDto);
     }
 
@@ -77,6 +79,16 @@ public class FakeStoreProductService implements IProductService {
     @Override
     public List<Product> populateFromFakeStore(int count) {
         return List.of();
+    }
+
+    @Override
+    public List<Product> getAllProductsByCategory(Long categoryId) {
+        return List.of();
+    }
+
+    @Override
+    public Page<Product> searchProducts(String query, Integer pageNumber, Integer pageSize, List<SortParam> sortParamList) {
+        return null;
     }
 
     public List<Product> sendNumberOfProducts(int count) {
@@ -115,14 +127,14 @@ public class FakeStoreProductService implements IProductService {
                     return categoryRepo.save(newCategory);
                 });
         product.setCategory(category);
-        product.setImageUrl(fakeStoreProductDto.getImageUrl());
+        product.setImageUrl(fakeStoreProductDto.getImage());
         return product;
     }
     private FakeStoreProductDto from(Product product) {
         FakeStoreProductDto fakeStoreProductDto = new FakeStoreProductDto();
         fakeStoreProductDto.setId(product.getId());
         fakeStoreProductDto.setPrice(product.getPrice());
-        fakeStoreProductDto.setImageUrl(product.getImageUrl());
+        fakeStoreProductDto.setImage(product.getImageUrl());
         fakeStoreProductDto.setTitle(product.getName());
         if(product.getCategory() != null) {
             fakeStoreProductDto.setCategory(product.getCategory().getName());

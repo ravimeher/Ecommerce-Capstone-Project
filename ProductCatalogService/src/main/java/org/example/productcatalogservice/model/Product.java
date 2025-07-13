@@ -25,8 +25,6 @@ public class Product extends BaseModel{
     @ManyToOne(cascade = CascadeType.ALL)
     @JsonManagedReference
     private Category category;
-//    @Column(name = "is_prime_specific")
-//    private Boolean isPrimeSpecific;
     @Column(name = "is_private")
     private Boolean isPrivate = false;
 

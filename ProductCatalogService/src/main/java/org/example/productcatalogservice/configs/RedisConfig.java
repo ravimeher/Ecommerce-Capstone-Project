@@ -18,7 +18,7 @@ public class RedisConfig {
 
     // redis start commands in ubuntu
 //    ravimeher@Bujji:~$ sudo service redis-server start
-//[sudo] password for ravimeher:
+//[sudo] password for ravimeher:password
 //    ravimeher@Bujji:~$ redis-cli
 //127.0.0.1:6379> ping
 //            PONG

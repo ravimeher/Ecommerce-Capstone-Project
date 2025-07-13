@@ -1,12 +1,18 @@
 package org.example.productcatalogservice.service;
 
+import org.example.productcatalogservice.dto.SortParam;
 import org.example.productcatalogservice.dto.UserDto;
+import org.example.productcatalogservice.exceptions.*;
 import org.example.productcatalogservice.model.Category;
 import org.example.productcatalogservice.model.Product;
+import org.example.productcatalogservice.model.Role;
 import org.example.productcatalogservice.repository.CategoryRepo;
 import org.example.productcatalogservice.repository.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,10 +35,10 @@ public class StorageProductService implements IProductService {
     @Override
     public Product getProductById(long id) {
         Optional<Product> product = productRepo.findById(id);
-        if(product.isPresent()){
-            return product.get();
+        if(!product.isPresent()){
+            throw new ProductNotFoundException("No Product for the id");
         }
-        return null;
+        return  product.get();
     }
 
     @Override
@@ -86,10 +92,13 @@ public class StorageProductService implements IProductService {
             return product.get();
         }
         //product is private - if role is admin or seller send back product or else send null
-        UserDto user = restTemplate.getForEntity("http://userservice/users/{uid}", UserDto.class,uid).getBody();
+
+        UserDto user = restTemplate.getForEntity("http://userservice/user/{uid}", UserDto.class,uid).getBody();
         System.out.println("Call was made to user service");
-        System.out.println(user.getEmail());
-        return product.get();
+        if(user != null && user.getRoles().contains(new Role("ADMIN")))
+            return product.get();
+
+        return null;
     }
 
     @Override
@@ -99,5 +108,32 @@ public class StorageProductService implements IProductService {
             productRepo.save(product);
         }
         return productsList;
+    }
+
+    @Override
+    public List<Product> getAllProductsByCategory(Long categoryId) {
+        Category category = categoryRepo.findById(categoryId).orElseThrow(()-> new CategoryNotFoundException("Not Valid Category"));
+        return productRepo.findAllByCategoryId(categoryId);
+    }
+    @Override
+    public Page<Product> searchProducts(String query, Integer pageNumber, Integer pageSize, List<SortParam> sortParamList){
+        //Sort sort = Sort.by("price").descending();
+        Sort sort=null;
+        if(!sortParamList.isEmpty()){
+            if(sortParamList.get(0).getSortType().equals("ASC")){
+                sort = Sort.by(sortParamList.get(0).getParamName());
+            }
+            else
+                sort = Sort.by(sortParamList.get(0).getParamName()).descending();
+        }
+        for(int i=1;i<sortParamList.size();i++){
+            if(sortParamList.get(i).getSortType().equals("ASC")){
+                sort.and(Sort.by(sortParamList.get(i).getParamName()));
+            }
+            else
+                sort.and(Sort.by(sortParamList.get(i).getParamName()).descending());
+        }
+        Page<Product> p = productRepo.findProductsByName(query, PageRequest.of(pageNumber,pageSize,sort));
+        return p;
     }
 }

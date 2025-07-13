@@ -21,7 +21,7 @@ public class ExceptionHandlerAdvice {
         response.setStackTrace(Arrays.toString(e.getStackTrace()));
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
-    @ExceptionHandler(InvalidPasswordException.class)
+    @ExceptionHandler({InvalidPasswordException.class})
     public ResponseEntity<ExceptionResponseDto> handleInvalidPasswordException(InvalidPasswordException e) {
         ExceptionResponseDto response = new ExceptionResponseDto();
         response.setMessage(e.getMessage());
