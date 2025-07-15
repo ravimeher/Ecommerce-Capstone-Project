@@ -63,9 +63,10 @@ public class ProductController {
     @GetMapping("{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable("id") long id) {
         try {
-            if(id<1 || id >20){
-                throw new IllegalArgumentException("id is not valid");
-            }
+//            if(id<1 || id >20){
+//                throw new IllegalArgumentException("id is not valid");
+//            }
+            //testing header addition
             MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();
             headers.add("Custom Addition", "By Ravi");
             Product product = productService.getProductById(id);
@@ -145,6 +146,7 @@ public class ProductController {
         product.setPrice(productDto.getPrice());
         product.setDescription(productDto.getDescription());
         product.setImageUrl(productDto.getImageUrl());
+        product.setQuantityAvailable(productDto.getQuantityAvailable());
         if(productDto.getCategory() != null){
             Category category = new Category();
             category.setId(productDto.getCategory().getId());
@@ -163,6 +165,7 @@ public class ProductController {
         productDto.setDescription(product.getDescription());
         productDto.setImageUrl(product.getImageUrl());
         productDto.setPrice(product.getPrice());
+        productDto.setQuantityAvailable(product.getQuantityAvailable());
         if(product.getCategory() != null)
         {
             CategoryDto categoryDto = new CategoryDto();
@@ -172,7 +175,7 @@ public class ProductController {
         }
         else
             productDto.setCategory(null);
-        //productDto.setIsPrivate(product.getIsPrivate());
+        productDto.setIsPrivate(product.getIsPrivate());
         return productDto;
     }
 

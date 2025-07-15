@@ -70,7 +70,7 @@ public class SpringSecurityConfig {
                 String name = URLEncoder.encode((String) oAuth2User.getAttributes().get("name"), StandardCharsets.UTF_8);
                 String email = URLEncoder.encode((String) oAuth2User.getAttributes().get("email"), StandardCharsets.UTF_8);
 
-                String redirectUrl = String.format("http://localhost:9000/auth/oauth2/success?token=%s&name=%s&email=%s", jwt, name, email);
+                String redirectUrl = String.format("https://6ad12d823aa4.ngrok-free.app/auth/oauth2/success?token=%s&name=%s&email=%s", jwt, name, email);
                 response.sendRedirect(redirectUrl);
             }
         };

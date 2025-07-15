@@ -27,5 +27,6 @@ public class Product extends BaseModel{
     private Category category;
     @Column(name = "is_private")
     private Boolean isPrivate = false;
-
+    @Column(name = "quantity_available")
+    private Integer quantityAvailable;
 }

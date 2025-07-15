@@ -31,7 +31,7 @@ public class JwtUtil {
         claims.put("roles", roleNames);
         long nowInMills =System.currentTimeMillis();
         claims.put("issued_at",nowInMills);
-        claims.put("expiry_at",nowInMills+1000000);
+        claims.put("expiry_at",nowInMills+7200000);
         System.out.println(Base64.getEncoder().encodeToString(jwtSecretKey.getEncoded()));
         return  Jwts.builder().claims(claims).signWith(jwtSecretKey, Jwts.SIG.HS256).compact();
     }

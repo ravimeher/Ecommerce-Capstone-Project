@@ -54,6 +54,7 @@ public class StorageProductService implements IProductService {
         oldProduct.setDescription(product.getDescription());
         oldProduct.setPrice(product.getPrice());
         oldProduct.setCategory(product.getCategory());
+        oldProduct.setQuantityAvailable(product.getQuantityAvailable());
         productRepo.save(oldProduct);
         return oldProduct;
     }

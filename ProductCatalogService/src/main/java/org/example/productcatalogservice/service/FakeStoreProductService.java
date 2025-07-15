@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 //@Primary
@@ -117,6 +118,7 @@ public class FakeStoreProductService implements IProductService {
         product.setName(fakeStoreProductDto.getTitle());
         product.setDescription(fakeStoreProductDto.getDescription());
         product.setPrice(fakeStoreProductDto.getPrice());
+        product.setQuantityAvailable(10 + new Random().nextInt(91));
 //        Category category = new Category();
 //        //category.setId(product.getId());
 //        category.setName(fakeStoreProductDto.getCategory());

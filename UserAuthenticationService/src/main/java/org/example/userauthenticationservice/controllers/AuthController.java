@@ -48,7 +48,7 @@ public class AuthController {
 
     }
 
-    @GetMapping("/validateToken/")
+    @GetMapping("/validateToken")
     public UserDto validateToken(@RequestParam String token) {
         System.out.println(token + "token to validate");
         User user = authService.validateToken(token);
@@ -69,7 +69,7 @@ public class AuthController {
 
         @GetMapping("/login/google")
         public void redirectToGoogleLogin (HttpServletResponse response) throws IOException {
-            String redirectUrl = "http://localhost:9000/oauth2/authorization/google";
+            String redirectUrl = "https://6ad12d823aa4.ngrok-free.app/oauth2/authorization/google";
             response.sendRedirect(redirectUrl);
         }
 
@@ -92,6 +92,7 @@ public class AuthController {
 
     private UserDto from(User user) {
         UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
         userDto.setName(user.getName());
         userDto.setEmail(user.getEmail());
         userDto.setRoles(user.getRoles());
