@@ -120,6 +120,14 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    @Override
+    public String clearCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserCartNotFoundException("Cart not found for user: " + userId));
+        cartRepository.delete(cart);
+        return  "Cart cleared successfully for userId: " + userId;
+    }
+
     private void updateCartTotal(Cart cart) {
         double total = cart.getItems().stream()
                 .mapToDouble(item -> item.getQuantity() * item.getPricePerUnit())

@@ -1,17 +1,37 @@
-package com.example.cartservice.dtos;
+package com.example.orderservice.models;
 
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class CartItemDto {
+public class OrderItem extends BaseModel {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
     private Long productId;
+
     private String productName;
+
     private int quantity;
-    private double pricePerUnit;
-    private double totalPrice;
+
+    private double price;
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
     public Long getProductId() {
         return productId;
@@ -37,21 +57,11 @@ public class CartItemDto {
         this.quantity = quantity;
     }
 
-    public double getPricePerUnit() {
-        return pricePerUnit;
+    public double getPrice() {
+        return price;
     }
 
-    public void setPricePerUnit(double pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
+    public void setPrice(double price) {
+        this.price = price;
     }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-
 }

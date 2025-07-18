@@ -17,7 +17,7 @@ public class UserServiceClient {
     public UserDto validateToken(String tokenValue){
 
         String token = tokenValue.replace("Bearer ", "").trim();
-        String url = "http://userService/auth/validateToken/?token=" + token;
+        String url = "http://userService/auth/validateToken?token=" + token;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
@@ -28,19 +28,4 @@ public class UserServiceClient {
         return  response.getBody();
     }
 
-    public boolean updateOrder(OrderRequestDto requestDto){
-        try {
-            String url = "http://orderService/orders/update" ;
-            HttpHeaders headers = new HttpHeaders();
-            //headers.set("Authorization", "Bearer " + internalToken);
-            headers.setContentType(MediaType.APPLICATION_JSON); // important if sending JSON
-            HttpEntity<OrderRequestDto> requestEntity = new HttpEntity<>(requestDto, headers);
-            ResponseEntity<Void> response = restTemplate.exchange(url , HttpMethod.PUT, requestEntity, Void.class);
-            return response.getStatusCode().is2xxSuccessful();
-        }catch (RestClientException e){
-            e.printStackTrace();
-            return false;
-        }
-
-    }
 }

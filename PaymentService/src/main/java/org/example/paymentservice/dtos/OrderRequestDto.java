@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class OrderRequestDto {
     Long orderId;
-    String paymentStatus;
+    PaymentStatus paymentStatus;
 }

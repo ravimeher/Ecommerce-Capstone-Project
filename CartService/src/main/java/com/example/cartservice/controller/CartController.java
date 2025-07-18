@@ -55,6 +55,13 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @DeleteMapping("/clear/{userId}")
+    public ResponseEntity<String> clearCart(@PathVariable Long userId,@RequestHeader("Authorization") String token) {
+        UserDto user = authenticate(token);
+        String response = cartService.clearCart(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping
     public ResponseEntity<CartResponse> viewCart(@RequestHeader("Authorization") String token) {
         UserDto user = authenticate(token);
@@ -62,11 +69,11 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/checkout")
-    public ResponseEntity<String> checkoutCart(@RequestBody CheckoutRequest request,
-                                               @RequestHeader("Authorization") String token) {
-        UserDto user = authenticate(token);
-        cartService.checkoutCart(user.getId(), request);
-        return new ResponseEntity<>("Order placed successfully", HttpStatus.OK);
-    }
+//    @PostMapping("/checkout")
+//    public ResponseEntity<String> checkoutCart(@RequestBody CheckoutRequest request,
+//                                               @RequestHeader("Authorization") String token) {
+//        UserDto user = authenticate(token);
+//        cartService.checkoutCart(user.getId(), request);
+//        return new ResponseEntity<>("Order placed successfully", HttpStatus.OK);
+//    }
 }

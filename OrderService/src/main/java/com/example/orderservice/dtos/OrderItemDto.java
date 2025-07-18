@@ -1,17 +1,17 @@
-package com.example.cartservice.dtos;
+package com.example.orderservice.dtos;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CartItemDto {
+public class OrderItemDto {
     private Long productId;
     private String productName;
     private int quantity;
-    private double pricePerUnit;
-    private double totalPrice;
+    private double price;
 
     public Long getProductId() {
         return productId;
@@ -37,21 +37,11 @@ public class CartItemDto {
         this.quantity = quantity;
     }
 
-    public double getPricePerUnit() {
-        return pricePerUnit;
+    public double getPrice() {
+        return price;
     }
 
-    public void setPricePerUnit(double pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
+    public void setPrice(double price) {
+        this.price = price;
     }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-
 }

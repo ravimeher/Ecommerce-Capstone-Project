@@ -13,4 +13,6 @@ public interface CartService {
     CartResponse getUserCart(Long userId);
 
     void checkoutCart(Long userId, CheckoutRequest request);
+
+    String clearCart(Long userId);
 }

@@ -7,9 +7,11 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentLink;
 import com.stripe.model.StripeObject;
 import com.stripe.net.Webhook;
+import org.example.paymentservice.client.OrderServiceClient;
 import org.example.paymentservice.client.UserServiceClient;
 import org.example.paymentservice.dtos.OrderRequestDto;
 import org.example.paymentservice.dtos.PaymentResponseDto;
+import org.example.paymentservice.dtos.PaymentStatus;
 import org.example.paymentservice.paymentgateway.PaymentGatewayChooser;
 import org.example.paymentservice.paymentgateway.PaymentGatewayStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,8 @@ public class PaymentService {
     private PaymentGatewayChooser paymentGatewayChooser;
     @Autowired
     private UserServiceClient userServiceClient;
-
+    @Autowired
+    private OrderServiceClient orderServiceClient;
     public PaymentResponseDto createPaymentLink(String name, String emailId, Long orderId, Long amount) {
         PaymentGatewayStrategy paymentGatewayStrategy = paymentGatewayChooser.getOptimalPaymentGateway();
         return paymentGatewayStrategy.getPaymentLink(name, emailId, orderId, amount);
@@ -90,9 +93,9 @@ public class PaymentService {
 
             OrderRequestDto requestDto = new OrderRequestDto();
             requestDto.setOrderId(orderId);
-            requestDto.setPaymentStatus("SUCCESS");
+            requestDto.setPaymentStatus(PaymentStatus.SUCCESS);
 
-            userServiceClient.updateOrder(requestDto);
+            orderServiceClient.updateOrder(requestDto);
 
         } catch (Exception e) {
             System.out.println("Error processing payment.captured event" + e);
@@ -111,9 +114,9 @@ public class PaymentService {
 
             OrderRequestDto requestDto = new OrderRequestDto();
             requestDto.setOrderId(orderId);
-            requestDto.setPaymentStatus("FAILURE");
+            requestDto.setPaymentStatus(PaymentStatus.FAILED);
 
-            userServiceClient.updateOrder(requestDto);
+            orderServiceClient.updateOrder(requestDto);
 
         } catch (Exception e) {
             System.out.println("Error processing payment.captured event"+ e);
@@ -143,7 +146,7 @@ public class PaymentService {
             case "payment_link.completed":
                 if (stripeObject instanceof PaymentLink) {
                     PaymentLink paymentLink = (PaymentLink) stripeObject;
-                    updateOrderFromMetadata(paymentLink.getMetadata(), "SUCCESS");
+                    updateOrderFromMetadata(paymentLink.getMetadata(), PaymentStatus.SUCCESS);
                 }
                 break;
 
@@ -151,7 +154,7 @@ public class PaymentService {
             case "payment_link.expired":
                 if (stripeObject instanceof PaymentLink) {
                     PaymentLink paymentLink = (PaymentLink) stripeObject;
-                    updateOrderFromMetadata(paymentLink.getMetadata(), "FAILURE");
+                    updateOrderFromMetadata(paymentLink.getMetadata(), PaymentStatus.FAILED);
                 }
                 break;
 
@@ -160,7 +163,7 @@ public class PaymentService {
         }
     }
 
-    private void updateOrderFromMetadata(Map<String, String> metadata, String status) {
+    private void updateOrderFromMetadata(Map<String, String> metadata, PaymentStatus status) {
         String orderIdStr = metadata.get("reference_id");
         if (orderIdStr == null) {
             System.out.println("⚠️ Missing reference_id in metadata.");
@@ -172,7 +175,7 @@ public class PaymentService {
             OrderRequestDto dto = new OrderRequestDto();
             dto.setOrderId(orderId);
             dto.setPaymentStatus(status); // Either "SUCCESS" or "FAILURE"
-            userServiceClient.updateOrder(dto);
+            orderServiceClient.updateOrder(dto);
 
             System.out.println("✅ Order " + orderId + " updated with status: " + status);
         } catch (NumberFormatException e) {
